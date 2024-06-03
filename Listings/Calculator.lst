@@ -1,0 +1,243 @@
+C51 COMPILER V9.60.7.0   CALCULATOR                                                        05/20/2024 13:32:41 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE CALCULATOR
+OBJECT MODULE PLACED IN .\Objects\Calculator.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE Calculator.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listing
+                    -s\Calculator.lst) TABS(2) OBJECT(.\Objects\Calculator.obj)
+
+line level    source
+
+   1          #include <reg51.h>
+   2          #include <stdio.h>
+   3          #include <string.h>  // Include for strcat and strlen
+   4          
+   5          sbit RS = P3^7;
+   6          sbit E = P3^6;
+   7          
+   8          sbit RowA = P1^0;
+   9          sbit RowB = P1^1;
+  10          sbit RowC = P1^2;
+  11          sbit RowD = P1^3;
+  12          
+  13          sbit C1 = P1^4;
+  14          sbit C2 = P1^5;
+  15          sbit C3 = P1^6;
+  16          sbit C4 = P1^7;
+  17          
+  18          void cct_init(void);
+  19          void delay(int);
+  20          char READ_SWITCHES(void);
+  21          char get_key(void);
+  22          int get_num(char);
+  23          void disp_string(char*);
+  24          void Lcdinit(void);
+  25          void writecmd(int);
+  26          void writedata(char);
+  27          char get_operator(char);
+  28          
+  29          void cct_init(void){
+  30   1          P0 = 0x00;
+  31   1          P1 = 0xFF;
+  32   1          P2 = 0x00;
+  33   1          P3 = 0x00;
+  34   1      }
+  35          
+  36          char READ_SWITCHES(void){
+  37   1          RowA = 0; RowB = 1; RowC = 1; RowD = 1;
+  38   1          if(C1 == 0) { delay(10000); while (C1 == 0); return '7';}
+  39   1          if(C2 == 0) { delay(10000); while (C2 == 0); return '8';}
+  40   1          if(C3 == 0) { delay(10000); while (C3 == 0); return '9';}
+  41   1          if(C4 == 0) { delay(10000); while (C4 == 0); return '/';}
+  42   1          
+  43   1          RowA = 1; RowB = 0; RowC = 1; RowD = 1;
+  44   1          if(C1 == 0) { delay(10000); while (C1 == 0); return '4';}
+  45   1          if(C2 == 0) { delay(10000); while (C2 == 0); return '5';}
+  46   1          if(C3 == 0) { delay(10000); while (C3 == 0); return '6';}
+  47   1          if(C4 == 0) { delay(10000); while (C4 == 0); return '*';}
+  48   1          
+  49   1          RowA = 1; RowB = 1; RowC = 0; RowD = 1;
+  50   1          if(C1 == 0) { delay(10000); while (C1 == 0); return '1';}
+  51   1          if(C2 == 0) { delay(10000); while (C2 == 0); return '2';}
+  52   1          if(C3 == 0) { delay(10000); while (C3 == 0); return '3';}
+  53   1          if(C4 == 0) { delay(10000); while (C4 == 0); return '-';}
+  54   1          
+C51 COMPILER V9.60.7.0   CALCULATOR                                                        05/20/2024 13:32:41 PAGE 2   
+
+  55   1          RowA = 1; RowB = 1; RowC = 1; RowD = 0;
+  56   1          if(C1 == 0) { delay(10000); while (C1 == 0); return 'C';}
+  57   1          if(C2 == 0) { delay(10000); while (C2 == 0); return '0';}
+  58   1          if(C3 == 0) { delay(10000); while (C3 == 0); return '=';}
+  59   1          if(C4 == 0) { delay(10000); while (C4 == 0); return '+';}
+  60   1          
+  61   1          return 'n';
+  62   1      }
+  63          
+  64          char get_operator(char ch){
+  65   1          switch(ch){
+  66   2              case '+' : return '+'; 
+  67   2              case '-' : return '-'; 
+  68   2              case '*' : return '*'; 
+  69   2              case '/' : return '/'; 
+  70   2              default  : return '\0'; 
+  71   2          }
+  72   1      }
+  73          
+  74          char get_key(void){
+  75   1          char key = 'n';
+  76   1          while(key == 'n'){
+  77   2              key = READ_SWITCHES();
+  78   2          }
+  79   1          return key;
+  80   1      }
+  81          
+  82          int get_num(char ch){
+  83   1          switch(ch){
+  84   2              case '0': return 0;
+  85   2              case '1': return 1;
+  86   2              case '2': return 2;
+  87   2              case '3': return 3;
+  88   2              case '4': return 4;
+  89   2              case '5': return 5;
+  90   2              case '6': return 6;
+  91   2              case '7': return 7;
+  92   2              case '8': return 8;
+  93   2              case '9': return 9;
+  94   2              default : return -1;
+  95   2          }
+  96   1      }
+  97          
+  98          void disp_string(char *str){
+  99   1          while(*str){
+ 100   2              writedata(*str++);
+ 101   2          }
+ 102   1      }
+ 103          
+ 104          void delay(int x){
+ 105   1          unsigned int j;
+ 106   1          for(j=0; j<x; j++){}
+ 107   1      }
+ 108          
+ 109          void writedata(char t){
+ 110   1          RS = 1;
+ 111   1          P2 = t;
+ 112   1          E = 1;
+ 113   1          delay(100);
+ 114   1          E = 0;
+ 115   1          delay(100);
+ 116   1      }
+C51 COMPILER V9.60.7.0   CALCULATOR                                                        05/20/2024 13:32:41 PAGE 3   
+
+ 117          
+ 118          void writecmd(int z){
+ 119   1          RS = 0;
+ 120   1          P2 = z;
+ 121   1          E = 1;
+ 122   1          delay(100);
+ 123   1          E = 0;
+ 124   1          delay(100);
+ 125   1      }
+ 126          
+ 127          void Lcdinit(void){
+ 128   1          delay(1500);
+ 129   1          writecmd(0x38);  // 8-bit mode with 2 lines
+ 130   1          writecmd(0x0C);  // Display on, cursor off
+ 131   1          writecmd(0x06);  // Increment cursor
+ 132   1          writecmd(0x01);  // Clear display
+ 133   1          delay(1500);
+ 134   1      }
+ 135          
+ 136          int main(void){
+ 137   1          char key;
+ 138   1          int num1 = 0, num2 = 0, result = 0;
+ 139   1          char operators = '\0';
+ 140   1          char expression[16] = "";
+ 141   1          int expr_index = 0;
+ 142   1          char buffer[16];
+ 143   1      
+ 144   1          cct_init();
+ 145   1          Lcdinit();
+ 146   1          
+ 147   1          while(1){
+ 148   2              key = get_key();
+ 149   2              
+ 150   2              if(key == 'C'){
+ 151   3                  writecmd(0x01); // Clear display
+ 152   3                  delay(1000);
+ 153   3                  num1 = num2 = result = 0;
+ 154   3                  operators = '\0';
+ 155   3                  expr_index = 0;
+ 156   3                  expression[0] = '\0';
+ 157   3              }
+ 158   2              else if(key == '='){
+ 159   3                  if (operators != '\0') {
+ 160   4                      switch(operators){
+ 161   5                          case '+' :
+ 162   5                              result = num1 + num2;
+ 163   5                              break;
+ 164   5                          case '-' :
+ 165   5                              result = num1 - num2;
+ 166   5                              break;
+ 167   5                          case '*' :
+ 168   5                              result = num1 * num2;
+ 169   5                              break;
+ 170   5                          case '/' :
+ 171   5                              if(num2 != 0)
+ 172   5                                  result = num1 / num2;
+ 173   5                              else 
+ 174   5                                  result = 0;  // Handle divide by zero
+ 175   5                              break;
+ 176   5                      }
+ 177   4                      sprintf(buffer, "=%d", result);
+ 178   4                      strcat(expression, buffer);
+C51 COMPILER V9.60.7.0   CALCULATOR                                                        05/20/2024 13:32:41 PAGE 4   
+
+ 179   4                      writecmd(0x01); // Clear display
+ 180   4                      delay(1000);
+ 181   4                      disp_string(expression);
+ 182   4                      delay(1000);
+ 183   4                      num1 = result; // Assign the result to num1 for further calculations
+ 184   4                      num2 = 0;      // Reset num2
+ 185   4                      operators = '\0'; // Reset the operator
+ 186   4                      expr_index = 0;
+ 187   4                      expression[0] = '\0';
+ 188   4                      sprintf(expression, "%d", num1);
+ 189   4                      expr_index = strlen(expression);
+ 190   4                  }
+ 191   3              }
+ 192   2              else {
+ 193   3                  if(key >= '0' && key <= '9') {
+ 194   4                      if(operators == '\0') {
+ 195   5                          num1 = num1 * 10 + get_num(key);
+ 196   5                      } else {
+ 197   5                          num2 = num2 * 10 + get_num(key);
+ 198   5                      }
+ 199   4                      expression[expr_index++] = key;
+ 200   4                      expression[expr_index] = '\0';
+ 201   4                      writedata(key);
+ 202   4                  }
+ 203   3                  else if(key == '+' || key == '-' || key == '*' || key == '/'){
+ 204   4                      if (operators == '\0') {
+ 205   5                          operators = get_operator(key);
+ 206   5                          expression[expr_index++] = key;
+ 207   5                          expression[expr_index] = '\0';
+ 208   5                          writedata(key);
+ 209   5                      }
+ 210   4                  }
+ 211   3              }    
+ 212   2          }
+ 213   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    993    ----
+   CONSTANT SIZE    =     23    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----      45
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
